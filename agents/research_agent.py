@@ -1,23 +1,35 @@
 """
 Research Agent — searches for information related to a given query.
 Specialized for Release Readiness topics (testing, deployment, security, etc.)
-No LLM API key required — uses DuckDuckGo search.
+
+Mode selection (set in .env or environment):
+  USE_LOCAL_KB=false  → DuckDuckGo web search (requires internet)
+  USE_LOCAL_KB=true   → Local knowledge base (VDI offline mode ✅)
 """
 import logging
-from tools.search_tool import SearchTool
+from config import USE_LOCAL_KB, RELEASE_DOMAINS
+
+if USE_LOCAL_KB:
+    from tools.local_knowledge_tool import LocalKnowledgeTool as SearchBackend
+    _MODE = "🗂️  LOCAL KB (offline)"
+else:
+    from tools.search_tool import SearchTool as SearchBackend
+    _MODE = "🌐 WEB SEARCH (online)"
 
 logger = logging.getLogger(__name__)
+logger.info(f"[ResearchAgent] Search mode: {_MODE}")
 
 
 class ResearchAgent:
     """
-    A research agent that uses DuckDuckGo to gather web information
-    about release readiness topics.
+    A research agent that queries either DuckDuckGo (online) or a
+    local knowledge base (offline/VDI mode) based on USE_LOCAL_KB config.
     """
 
     def __init__(self):
-        self.search_tool = SearchTool()
+        self.search_tool = SearchBackend()
         self.name = "ResearchAgent"
+        self.mode = _MODE
 
     def run(self, query: str) -> dict:
         """

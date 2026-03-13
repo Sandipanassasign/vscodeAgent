@@ -1,8 +1,11 @@
 """
 Configuration for the Release Readiness Multi-Agent System
-No API keys required — uses DuckDuckGo for search and rule-based routing.
+Supports two modes:
+  - ONLINE  : Uses DuckDuckGo web search (requires internet)
+  - OFFLINE : Uses local knowledge base files (VDI-friendly, no internet)
 """
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,9 +15,21 @@ APP_NAME = "Release Readiness Multi-Agent"
 APP_VERSION = "1.0.0"
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
+# ─── Mode Selection ─────────────────────────────────────────────────────────
+# Set USE_LOCAL_KB=true in .env to switch to offline/local knowledge base mode
+# Set USE_LOCAL_KB=false (or leave unset) to use DuckDuckGo web search
+USE_LOCAL_KB = os.getenv("USE_LOCAL_KB", "false").lower() == "true"
+
 # ─── Agent Settings ──────────────────────────────────────────────────────────
 MAX_SEARCH_RESULTS = int(os.getenv("MAX_SEARCH_RESULTS", "5"))
 MAX_SUMMARY_LENGTH = int(os.getenv("MAX_SUMMARY_LENGTH", "500"))
+
+# ─── Local Knowledge Base ─────────────────────────────────────────────────────
+# Path to the folder containing your local .txt and .md knowledge documents
+KNOWLEDGE_BASE_DIR = os.getenv(
+    "KNOWLEDGE_BASE_DIR",
+    str(Path(__file__).parent / "knowledge_base")
+)
 
 # ─── Release Readiness Domains ───────────────────────────────────────────────
 RELEASE_DOMAINS = [
