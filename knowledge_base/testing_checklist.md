@@ -1,46 +1,50 @@
-# Release Readiness Checklist — Testing
+# Release Readiness Checklist — Testing (Banking Edition)
 
-## Pre-Release Testing Checklist
+## 🏦 Banking Domain Specific Testing
+
+### Core Banking & Payments
+- [ ] **Cross-Border Payments**: Validate SWIFT/SEPA/ACH message formatting and handling.
+- [ ] **Transaction Integrity**: Verify ACID properties for all fund transfers and ledger updates.
+- [ ] **Interest & Fee Calculations**: Validate precision of interest accruals, overdraft fees, and currency conversions (using 4+ decimal places).
+- [ ] **Reconciliation**: Automated end-of-day (EOD) and start-of-day (SOD) balance matching verified.
+- [ ] **KYC/AML**: Verify identity document upload and AML screening api responses for "high-risk" flags.
+
+### Account Management
+- [ ] **Balance Synchronization**: Real-time balance updates across Web, Mobile, and ATM channels.
+- [ ] **Limits & Thresholds**: Test daily transaction limits, withdrawal caps, and alert triggers.
+
+---
+
+## 🤖 Automation Testing Strategy
+
+### Web & API Automation
+- [ ] **Playwright/Selenium**: Full E2E suite covering critical customer journeys (Login -> Transfer -> Statement).
+- [ ] **REST Assured**: API contract testing for all Downstream Payment Gateway integrations.
+- [ ] **Mocking**: Use WireMock to simulate Core Banking outages and slow response times.
+
+### Mobile Automation
+- [ ] **Appium**: Sanity suite for Android and iOS covering Biometric Login and QR code payments.
+
+### Performance & Security Automation
+- [ ] **JMeter/k6**: Stress testing for peak-load scenarios (e.g., Salary Day, Black Friday).
+- [ ] **ZAP/Burp Suite**: Automated DAST scans integrated into the CI/CD pipeline.
+
+---
+
+## ✅ General Release Readiness
 
 ### Functional Testing
 - All user stories and acceptance criteria verified
-- Edge cases and boundary conditions tested
+- Edge cases and boundary conditions (e.g., zero balance, expired card) tested
 - API contracts and integrations validated
-- UI/UX tested across all supported browsers and devices
-- Error messages and validation behaviors confirmed
 
 ### Regression Testing
 - Full regression suite executed on the release build
+- Automated regression pass rate above **98%** for Banking Core modules
 - No P1 or P2 defects outstanding
-- Previously fixed bugs re-verified
-- Automated regression pass rate above 95%
 
-### Performance Testing
-- Load testing completed under expected peak user volume
-- Response times within SLA thresholds (< 2s for critical paths)
-- Memory and CPU utilization within acceptable limits
-- Database query performance validated
-
-### Security Testing
-- OWASP Top 10 vulnerabilities checked
-- Authentication and authorization flows verified
-- Sensitive data is encrypted in transit and at rest
-- Dependency vulnerability scan completed (no critical CVEs)
-- Penetration testing completed (if required)
-
-### User Acceptance Testing (UAT)
-- UAT sign-off received from product owner / business stakeholder
-- UAT defects triaged and resolved or deferred with approval
-- User documentation and release notes reviewed by stakeholders
-
-### Accessibility Testing
-- WCAG 2.1 AA compliance verified
-- Screen reader compatibility confirmed
-- Keyboard navigation tested
-
-## Definition of Done for Testing
-- All test cases executed
-- Test results documented and reviewed
-- No open P1/P2 defects
-- UAT sign-off received
-- Test summary report shared with leadership
+### Definition of Done for Testing
+- All test cases executed and results logged in Jira/ALM
+- Performance benchmarks met for 99th percentile users
+- **Regulatory Sign-off**: Internal Audit and Compliance team approval received
+- Test summary report shared with the Release Management Committee

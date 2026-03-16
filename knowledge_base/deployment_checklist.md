@@ -1,6 +1,29 @@
-# Release Readiness Checklist — Deployment
+# Release Readiness Checklist — Deployment (Banking Edition)
 
-## Pre-Deployment Checklist
+## 🚢 Banking-Grade Deployment Strategy
+
+### 🚦 Advanced Rollout Tactics
+- [ ] **Traffic Mirroring**: Copy production traffic to a "Shadow" release to validate Core Banking stability.
+- [ ] **Dark Launching**: Deploy payment gateway logic behind a feature flag for internal-only testing.
+- [ ] **Blue/Green Switch**: Zero-downtime cutover with dry-run of database fallbacks.
+
+### 📋 Pre-Deployment Governance
+- [ ] **Change Advisory Board (CAB)**: Approval ticket number linked in deployment logs.
+- [ ] **Regulatory Notice**: Notify regional regulators if deployment impacts external Open Banking APIs.
+- [ ] **Maintenance Banner**: Scheduled maintenance notice published on Web and Mobile app if downtime > 5 min.
+
+### 🛠️ Execution & Smoke Tests
+- [ ] **Batch Processing**: Rehearse end-of-day batch jobs in the new environment post-deployment.
+- [ ] **HSM Connectivity**: Verified connection to the live Hardware Security Module for transaction signing.
+- [ ] **3rd Party Gateways**: Health check pass for Visa/Mastercard/SWIFT simulator connections.
+
+---
+
+## ↩️ Rollback & Contingency
+- [ ] **Point-in-Time Recovery (PITR)**: Verify database can be restored to the state exactly 1 minute before deployment.
+- [ ] **Automated Rollback**: Triggers if Transaction Success Rate (TSR) drops by > 2% in 5 minutes.
+- [ ] **Data Correction Scripts**: Pre-written scripts to handle partial transaction states during a rollback.
+
 
 ### Infrastructure & Environment
 - Target environment (staging/prod) provisioned and validated

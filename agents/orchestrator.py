@@ -21,7 +21,14 @@ from langgraph.graph import StateGraph, END
 
 from agents.research_agent import ResearchAgent
 from agents.summarizer_agent import SummarizerAgent
-from config import RESEARCH_KEYWORDS, SUMMARIZE_KEYWORDS, RELEASE_KEYWORDS, RELEASE_DOMAINS
+from agents.bug_analysis_agent import BugAnalysisAgent
+from agents.code_review_agent import CodeReviewAgent
+from agents.compliance_agent import ComplianceAgent
+from config import (
+    RESEARCH_KEYWORDS, SUMMARIZE_KEYWORDS, RELEASE_KEYWORDS, 
+    BUG_KEYWORDS, REVIEW_KEYWORDS, COMPLIANCE_KEYWORDS,
+    RELEASE_DOMAINS
+)
 
 logger = logging.getLogger(__name__)
 
@@ -46,8 +53,13 @@ class Orchestrator:
     def __init__(self):
         self.research_agent = ResearchAgent()
         self.summarizer_agent = SummarizerAgent()
+        self.bug_analysis_agent = BugAnalysisAgent()
+        self.code_review_agent = CodeReviewAgent()
+        self.compliance_agent = ComplianceAgent()
         self.graph = self._build_graph()
         self.name = "Orchestrator"
+        self.last_state = None
+        self.history = []
 
     # ── Node Functions ──────────────────────────────────────────────────────
 
@@ -58,6 +70,12 @@ class Orchestrator:
 
         if any(kw in query for kw in RELEASE_KEYWORDS):
             intent = "release_check"
+        elif any(kw in query for kw in BUG_KEYWORDS):
+            intent = "bug_analysis"
+        elif any(kw in query for kw in REVIEW_KEYWORDS):
+            intent = "code_review"
+        elif any(kw in query for kw in COMPLIANCE_KEYWORDS):
+            intent = "compliance_check"
         elif any(kw in query for kw in RESEARCH_KEYWORDS):
             intent = "research"
         elif any(kw in query for kw in SUMMARIZE_KEYWORDS):
@@ -99,6 +117,36 @@ class Orchestrator:
             logger.error(f"[{self.name}] Release check error: {e}")
             return {**state, "error": str(e), "research_output": {}}
 
+    def bug_analysis_node(self, state: AgentState) -> AgentState:
+        """Run the BugAnalysisAgent."""
+        logger.info(f"[{self.name}] Invoking BugAnalysisAgent...")
+        try:
+            result = self.bug_analysis_agent.run(state["query"])
+            return {**state, "research_output": result}
+        except Exception as e:
+            logger.error(f"[{self.name}] BugAnalysisAgent error: {e}")
+            return {**state, "error": str(e), "research_output": {}}
+
+    def code_review_node(self, state: AgentState) -> AgentState:
+        """Run the CodeReviewAgent."""
+        logger.info(f"[{self.name}] Invoking CodeReviewAgent...")
+        try:
+            result = self.code_review_agent.run(state["query"])
+            return {**state, "research_output": result}
+        except Exception as e:
+            logger.error(f"[{self.name}] CodeReviewAgent error: {e}")
+            return {**state, "error": str(e), "research_output": {}}
+
+    def compliance_check_node(self, state: AgentState) -> AgentState:
+        """Run the ComplianceAgent."""
+        logger.info(f"[{self.name}] Invoking ComplianceAgent...")
+        try:
+            result = self.compliance_agent.run(state["query"])
+            return {**state, "research_output": result}
+        except Exception as e:
+            logger.error(f"[{self.name}] ComplianceAgent error: {e}")
+            return {**state, "error": str(e), "research_output": {}}
+
     def summarize_node(self, state: AgentState) -> AgentState:
         """Run the SummarizerAgent on previous research output."""
         logger.info(f"[{self.name}] Invoking SummarizerAgent...")
@@ -125,6 +173,12 @@ class Orchestrator:
         intent = state.get("intent", "research")
         if intent == "release_check":
             return "release_check"
+        elif intent == "bug_analysis":
+            return "bug_analysis"
+        elif intent == "code_review":
+            return "code_review"
+        elif intent == "compliance_check":
+            return "compliance_check"
         elif intent == "summarize":
             return "summarize"
         return "research"
@@ -139,6 +193,9 @@ class Orchestrator:
         graph.add_node("route_intent", self.route_intent)
         graph.add_node("research", self.research_node)
         graph.add_node("release_check", self.release_check_node)
+        graph.add_node("bug_analysis", self.bug_analysis_node)
+        graph.add_node("code_review", self.code_review_node)
+        graph.add_node("compliance_check", self.compliance_check_node)
         graph.add_node("summarize", self.summarize_node)
 
         # Set entry point
@@ -151,13 +208,19 @@ class Orchestrator:
             {
                 "research": "research",
                 "release_check": "release_check",
+                "bug_analysis": "bug_analysis",
+                "code_review": "code_review",
+                "compliance_check": "compliance_check",
                 "summarize": "summarize",
             }
         )
 
-        # After research/release_check → always summarize
+        # After research/release_check/etc. → always summarize
         graph.add_edge("research", "summarize")
         graph.add_edge("release_check", "summarize")
+        graph.add_edge("bug_analysis", "summarize")
+        graph.add_edge("code_review", "summarize")
+        graph.add_edge("compliance_check", "summarize")
         graph.add_edge("summarize", END)
 
         return graph.compile()
@@ -188,8 +251,19 @@ class Orchestrator:
         }
 
         final_state = self.graph.invoke(initial_state)
+        self.last_state = final_state
+        self.history.append(final_state)
         logger.info(f"[{self.name}] Pipeline complete.")
         return final_state
+
+    def generate_report(self) -> str:
+        """Generate an HTML report based on the executed agents in this session."""
+        if not self.history:
+            return "⚠️ No previous run data available to generate a report."
+        from agents.report_agent import ReportAgent
+        agent = ReportAgent()
+        report_path = agent.generate(self.history)
+        return f"\n✅ HTML Report successfully generated at:\n   {report_path}\n"
 
     # ── Formatting ─────────────────────────────────────────────────────────────
 

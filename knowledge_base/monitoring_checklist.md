@@ -1,6 +1,32 @@
-# Release Readiness Checklist — Monitoring & Observability
+# Release Readiness Checklist — Monitoring (Banking Edition)
 
-## Monitoring Readiness
+## 📈 Banking Business Observability
+
+### 💸 Critical Transaction Metrics
+- [ ] **Transaction Success Rate (TSR)**: Real-time alerting if success rate for fund transfers drops < 99.9%.
+- [ ] **Average Latency**: Track time-to-complete for ATM and Point-of-Sale (POS) api calls (Threshold: < 500ms).
+- [ ] **Settlement Backlog**: Monitor queues for ACH and SWIFT message settlements.
+- [ ] **Authorization Failures**: Distinguish between user errors (insufficient funds) and system errors.
+
+### 🕵️ Security & Fraud Monitoring
+- [ ] **Velocity Checks**: Alert on abnormal spikes in transaction volume per user/IP.
+- [ ] **MFA Success/Fail**: Monitor rates of second-factor authentication failures.
+- [ ] **SIEM Integration**: Real-time export of access logs to the Security Operations Center (SOC).
+
+---
+
+## 🖥️ Operational Dashboards
+- [ ] **API Health**: Traffic and error rates for all B2B and Internal Core Banking APIs.
+- [ ] **Database Health**: Active connections, lock contention, and replication lag for the Ledger DB.
+- [ ] **Partner Health**: Status page monitors for downstream payment providers and cloud infrastructure.
+
+---
+
+## 🚨 Alerts & On-Call
+- **P1 (CRITICAL)**: Any spike in 5xx errors on the Transfer API → Immediate Page.
+- **P1 (CRITICAL)**: HSM Connectivity Loss → Immediate Rollback.
+- **P2 (WARN)**: Latency increase on non-critical path (e.g., Statement generation) > 2s.
+
 
 ### Logging
 - Structured logging implemented (JSON format preferred)

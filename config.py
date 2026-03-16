@@ -41,6 +41,9 @@ RELEASE_DOMAINS = [
     "rollback",
     "monitoring",
     "approval",
+    "compliance",
+    "incident",
+    "standard",
 ]
 
 # ─── Intent Keywords for Routing ─────────────────────────────────────────────
@@ -57,4 +60,19 @@ SUMMARIZE_KEYWORDS = [
 RELEASE_KEYWORDS = [
     "release", "deploy", "readiness", "checklist", "go-live",
     "production", "launch", "ship", "publish", "rollout"
+]
+
+BUG_KEYWORDS = [
+    "bug", "error", "issue", "incident", "crash", "failure", 
+    "broken", "fix", "resolution", "root cause"
+]
+
+REVIEW_KEYWORDS = [
+    "review", "code", "standards", "best practices", "guidelines",
+    "refactor", "lint", "naming", "quality"
+]
+
+COMPLIANCE_KEYWORDS = [
+    "compliance", "audit", "legal", "gdpr", "soc2", "policy",
+    "requirement", "license", "regulation"
 ]

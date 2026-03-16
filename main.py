@@ -46,7 +46,14 @@ MENU = """
 │  [2] Run preset: Release Readiness Check    │
 │  [3] Run preset: Search Testing Practices   │
 │  [4] Run preset: Summarize Deployment Tips  │
+│  [5] Run preset: Bug & Incident Analysis    │
+│  [6] Run preset: Code Review Guidelines     │
+│  [7] Run preset: Compliance Audit           │
+│  [8] Generate HTML Report (Last execution)  │
 │  [q] Quit                                   │
+│                                             │
+│  Tip: Enter comma-separated lists (2,5,7)   │
+│  or ranges (2-8) to run them in sequence.   │
 └─────────────────────────────────────────────┘
 """
 
@@ -54,6 +61,9 @@ PRESET_QUERIES = {
     "2": "check release readiness for production deployment",
     "3": "search best practices for software testing before release",
     "4": "summarize deployment checklist and rollback strategy",
+    "5": "analyze recent incidents and common bug patterns",
+    "6": "review coding standards and performance guidelines",
+    "7": "run compliance audit for soc2 and gdpr requirements",
 }
 
 
@@ -76,19 +86,45 @@ def interactive_mode(orchestrator: Orchestrator):
         print(MENU)
         choice = input("Your choice: ").strip().lower()
 
-        if choice == "q":
+        raw_choices = [c.strip() for c in choice.split(",") if c.strip()]
+        choices = []
+
+        # Parse potential ranges (e.g. '1-3')
+        for rc in raw_choices:
+            if "-" in rc:
+                parts = rc.split("-")
+                if len(parts) == 2 and parts[0].isdigit() and parts[1].isdigit():
+                    start, end = int(parts[0]), int(parts[1])
+                    if start <= end:
+                        choices.extend([str(i) for i in range(start, end + 1)])
+                    else:
+                        choices.extend([str(i) for i in range(start, end - 1, -1)])
+                else:
+                    choices.append(rc)
+            else:
+                choices.append(rc)
+
+        if not choices:
+            continue
+
+        if "q" in choices:
             print("\n👋 Goodbye! Release Readiness System shutting down.\n")
             break
-        elif choice == "1":
-            query = input("\n📝 Enter your query: ").strip()
-            if query:
-                run_query(orchestrator, query)
+
+        for c in choices:
+            if c == "1":
+                query = input("\n📝 Enter your custom query: ").strip()
+                if query:
+                    run_query(orchestrator, query)
+                else:
+                    print("⚠️  Empty query. Skipping.")
+            elif c == "8":
+                print("\n⏳ Generating Release Readiness HTML report...")
+                print(orchestrator.generate_report())
+            elif c in PRESET_QUERIES:
+                run_query(orchestrator, PRESET_QUERIES[c])
             else:
-                print("⚠️  Empty query. Please try again.")
-        elif choice in PRESET_QUERIES:
-            run_query(orchestrator, PRESET_QUERIES[choice])
-        else:
-            print("⚠️  Invalid choice. Please select 1–4 or q.")
+                print(f"⚠️  Invalid choice '{c}'. Please select 1–8 or q.")
 
 
 def main():
